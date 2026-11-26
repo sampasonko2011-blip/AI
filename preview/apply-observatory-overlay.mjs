@@ -13,8 +13,7 @@ for (const file of ["observatory-exocortex.css", "observatory-exocortex.js"]) {
 }
 if (!existsSync(htmlPath) || !existsSync(indexPath)) throw new Error("PREVIEW_ENTRY_MISSING");
 
-// Preserve the original 15-module HQ as a separate destination. The preview root
-// becomes the Observatory command station, while HQ GRID remains one tap away.
+// Keep the existing HQ Grid as a separate entry point.
 copyFileSync(indexPath, gridPath);
 const rootEntry = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -22,34 +21,36 @@ const rootEntry = `<!doctype html>
 <meta http-equiv="refresh" content="0;url=./observatory.html"><title>JARVIS-X // EXOCORTEX HQ</title></head>
 <body><main><h1>JARVIS-X // EXOCORTEX HQ</h1><p>Opening the Spatial Observatory…</p><p><a href="./observatory.html">Open Observatory</a> · <a href="./hq-grid.html">Open full HQ Grid</a></p></main></body></html>`;
 writeFileSync(indexPath, rootEntry);
+
+// Generate a new isolated preview cache namespace. Never unregister unrelated workers.
 const swPath = path.join(output, "sw.js");
-if (existsSync(swPath)) {
-  let sw = readFileSync(swPath, "utf8");
-  // Isolated preview owns a dedicated cache namespace; never reuse v1 after DOM changes.
-  if (sw.includes("jarvis-x-p5-safe-preview-v1")) {
-    sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v3");
-    writeFileSync(swPath, sw);
-  }
-  if (!sw.includes("jarvis-x-p5-safe-preview-v3") || sw.includes("jarvis-x-p5-safe-preview-v1")) {
-    throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V2");
-  }
-  for (const asset of ["./hq-grid.html","./observatory-exocortex.css","./observatory-exocortex.js"]) {
-    if (!sw.includes(JSON.stringify(asset))) sw = sw.replace("const SHELL = [", 'const SHELL = [' + JSON.stringify(asset) + ',');
-  }
-    if (!sw.includes('"./hq-grid.html"') || !sw.includes('"./observatory-exocortex.css"') || !sw.includes('"./observatory-exocortex.js"')) throw new Error("PREVIEW_ASSETS_OFFLINE_SHELL_INJECTION_FAILED");
-    writeFileSync(swPath, sw);
-  }
-  const manifestPath = path.join(output, "preview-manifest.json");
-  if (existsSync(manifestPath)) {
-    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-    manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v3";
-    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\\n");
+if (!existsSync(swPath)) throw new Error("PREVIEW_SERVICE_WORKER_MISSING");
+let sw = readFileSync(swPath, "utf8");
+sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v3")
+       .replaceAll("jarvis-x-p5-safe-preview-v2", "jarvis-x-p5-safe-preview-v3");
+if (!sw.includes("jarvis-x-p5-safe-preview-v3") || /jarvis-x-p5-safe-preview-v[12]/.test(sw)) {
+  throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V3");
+}
+const shellMarker = "const SHELL = [";
+if (!sw.includes(shellMarker)) throw new Error("PREVIEW_SERVICE_WORKER_SHELL_MISSING");
+const assets = ["./hq-grid.html", "./observatory-exocortex.css", "./observatory-exocortex.js"];
+for (const asset of assets) {
+  if (!sw.includes(JSON.stringify(asset))) {
+    sw = sw.replace(shellMarker, shellMarker + JSON.stringify(asset) + ", ");
   }
 }
+if (!assets.every(asset => sw.includes(JSON.stringify(asset)))) throw new Error("PREVIEW_ASSETS_OFFLINE_SHELL_INJECTION_FAILED");
+writeFileSync(swPath, sw);
+
+const manifestPath = path.join(output, "preview-manifest.json");
+if (existsSync(manifestPath)) {
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v3";
+  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+}
+
 let html = readFileSync(htmlPath, "utf8");
-// Physically remove the legacy central sanctuary/astrolabe from the published DOM.
-// This is intentionally not a CSS hide: the opaque crystal and its enclosing hero
-// section must not ship in the Observatory document at all.
+// Physically remove the complete central sanctuary / astrolabe section.
 const sanctuaryStart = html.indexOf('<section class="sanctuary">');
 if (sanctuaryStart >= 0) {
   const sanctuaryEnd = html.indexOf("</section>", sanctuaryStart);
@@ -59,18 +60,19 @@ if (sanctuaryStart >= 0) {
 if (html.includes('id="astrolabe"') || html.includes('class="sanctuary"')) {
   throw new Error("SANCTUARY_DOM_REMOVAL_FAILED");
 }
-// Remove the obsolete multi-button toolbar from the published DOM, not merely via CSS.
-const legacyDockStart = html.indexOf('<nav class="dock">');
-if (legacyDockStart >= 0) {
-  const legacyDockEnd = html.indexOf("</nav>", legacyDockStart);
-  if (legacyDockEnd < 0) throw new Error("LEGACY_DOCK_CLOSE_NOT_FOUND");
-  html = html.slice(0, legacyDockStart) + html.slice(legacyDockEnd + "</nav>".length);
+
+// Physically remove the obsolete toolbar; the new dock is created by the overlay.
+const dockStart = html.indexOf('<nav class="dock">');
+if (dockStart >= 0) {
+  const dockEnd = html.indexOf("</nav>", dockStart);
+  if (dockEnd < 0) throw new Error("LEGACY_DOCK_CLOSE_NOT_FOUND");
+  html = html.slice(0, dockStart) + html.slice(dockEnd + "</nav>".length);
 }
-if (html.includes('<nav class="dock">') || html.includes("＋ ADD MODULE") || html.includes("CHAT IA</a>")) {
-  throw new Error("LEGACY_DOCK_DOM_REMOVAL_FAILED");
+for (const forbidden of ['<nav class="dock">', "＋ ADD MODULE", "CHAT IA</a>"]) {
+  if (html.includes(forbidden)) throw new Error("LEGACY_DOCK_DOM_REMOVAL_FAILED: " + forbidden);
 }
 if (!html.includes("observatory-exocortex.css")) html = html.replace("</head>", '<link rel="stylesheet" href="./observatory-exocortex.css">\n</head>');
 if (!html.includes("observatory-exocortex.js")) html = html.replace("</body>", '<script src="./observatory-exocortex.js" defer></script>\n</body>');
 if (!html.includes("observatory-exocortex.css") || !html.includes("observatory-exocortex.js")) throw new Error("OVERLAY_INJECTION_FAILED");
 writeFileSync(htmlPath, html);
-console.log(JSON.stringify({ root: "index.html -> observatory.html", grid: "hq-grid.html", entry: "observatory.html", overlay: ["observatory-exocortex.css", "observatory-exocortex.js"], output }, null, 2));
+console.log(JSON.stringify({entry:"observatory.html", removed:[".sanctuary","#astrolabe",".dock"], cache:"jarvis-x-p5-safe-preview-v3", grid:"hq-grid.html"}, null, 2));
