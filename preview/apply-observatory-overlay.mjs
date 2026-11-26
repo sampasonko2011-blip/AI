@@ -8,7 +8,7 @@ const htmlPath = path.join(output, "observatory.html");
 const indexPath = path.join(output, "index.html");
 const gridPath = path.join(output, "hq-grid.html");
 
-for (const file of ["observatory-exocortex.css", "observatory-exocortex.js"]) {
+for (const file of ["observatory-exocortex.css", "observatory-exocortex.js", "module-frame.css"]) {
   if (!existsSync(path.join(overlay, file))) throw new Error("OVERLAY_ASSET_MISSING: " + file);
   copyFileSync(path.join(overlay, file), path.join(output, file));
 }
@@ -42,7 +42,7 @@ for (const retired of ["observatory.js", "v54-observatory.js"]) {
   if (existsSync(target)) unlinkSync(target);
   sw = sw.replaceAll(JSON.stringify("./" + retired) + ",", "");
 }
-const assets = ["./hq-grid.html", "./observatory-exocortex.css", "./observatory-exocortex.js"];
+const assets = ["./hq-grid.html", "./observatory-exocortex.css", "./observatory-exocortex.js", "./module-frame.css"];
 for (const asset of assets) {
   if (!sw.includes(JSON.stringify(asset))) {
     sw = sw.replace(shellMarker, shellMarker + JSON.stringify(asset) + ", ");
@@ -56,6 +56,15 @@ if (existsSync(manifestPath)) {
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v5";
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+}
+
+// Permit only public model-artifact hosts for the explicitly user-initiated local WebLLM download.
+const localChatPath = path.join(output, "local-chat.html");
+if (existsSync(localChatPath)) {
+  let localChat = readFileSync(localChatPath, "utf8");
+  localChat = localChat.replace("connect-src 'self'; font-src", "connect-src 'self' https://huggingface.co https://*.huggingface.co https://cdn-lfs.huggingface.co https://cas-bridge.xethub.hf.co https://*.xethub.hf.co https://*.hf.co https://raw.githubusercontent.com; font-src");
+  if (!localChat.includes("https://huggingface.co") || localChat.includes("https://xfewajxkqntflfntisut.supabase.co")) throw new Error("LOCAL_CHAT_MODEL_CSP_NOT_SAFE");
+  writeFileSync(localChatPath, localChat);
 }
 
 let html = readFileSync(htmlPath, "utf8");
@@ -112,7 +121,7 @@ const finalManifestPath = path.join(output, "preview-manifest.json");
 if (existsSync(finalManifestPath)) {
   const manifest = JSON.parse(readFileSync(finalManifestPath, "utf8"));
   manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v5";
-  const paths = [...new Set([...manifest.files.map(file => file.path), "index.html", "hq-grid.html", "observatory-exocortex.css", "observatory-exocortex.js", "sw.js"])]
+  const paths = [...new Set([...manifest.files.map(file => file.path), "index.html", "hq-grid.html", "observatory-exocortex.css", "observatory-exocortex.js", "module-frame.css", "sw.js"])]
     .filter(name => existsSync(path.join(output, name)));
   manifest.files = paths.map(name => {
     const bytes = readFileSync(path.join(output, name));
