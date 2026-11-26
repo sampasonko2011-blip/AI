@@ -23,7 +23,7 @@ left.append(
 );
 right.append(
  panel('03 / EVIDENCE LEDGER','INTEGRITY & AUDIT','No live SaboteurAgent or gateway connection is claimed. Evidence will be shown only when produced by the connected runtime.','SABOTEUR: UNKNOWN',null),
- panel('04 / OFFLINE TELEMETRY','ENCRYPTED OUTBOX','IndexedDB queue and encryption key status are not inspected by this display layer. Open the memory module to inspect local records.','QUEUE: NOT INSPECTED',{label:'OPEN MEMORY',run:()=>document.querySelector('[data-v29-add="vault"]')?.click()||info('Memory','The memory module is not available in this preview.')})
+ panel('04 / OFFLINE TELEMETRY','ENCRYPTED OUTBOX','IndexedDB queue and encryption key status are not inspected by this display layer. Open the memory module to inspect local records.','QUEUE: NOT INSPECTED',{label:'OPEN MEMORY',run:()=>{const target=document.querySelector('[data-v29-add="vault"]');if(target){target.click();return}info('Memory','The memory module is not available in this preview.')}})
 );
 cockpit.classList.add('ex-cockpit');
 cockpit.insertBefore(left,core);cockpit.append(right);
