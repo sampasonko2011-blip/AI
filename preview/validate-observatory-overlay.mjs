@@ -8,7 +8,9 @@ const index=read("index.html"), html=read("observatory.html"), grid=read("hq-gri
 for (const retired of ["observatory.js","v54-observatory.js"]) if (existsSync(path.join(root,retired))) throw new Error("RETIRED_SCRIPT_STILL_PUBLISHED: "+retired);
 for (const name of ["observatory.css","interstellar-v30.css","interstellar-v31.css","interstellar-v32.css","spatial-liquid-hud.css","v54-harmony.css","observatory-exocortex.css"]) {
   const content=read(name);
-  if (/(?:\\.sanctuary|#astrolabe|\\.astrolabe|\\.crystal|\\.jx-v54-shell|\\.jx-v54-orb|\\.jx-v54-panel|\\.jx-v54-title|\\.jx-v54-value)/.test(content)) throw new Error("LEGACY_VISUAL_CORE_CSS_REMAINS: "+name);
+  for (const token of [".sanctuary","#astrolabe",".astrolabe",".crystal",".jx-v54-shell",".jx-v54-orb",".jx-v54-panel",".jx-v54-title",".jx-v54-value"]) {
+    if(content.includes(token)) throw new Error("LEGACY_VISUAL_CORE_CSS_REMAINS: "+name+" "+token);
+  }
 }
 for (const needle of ['url=./observatory.html','href="./hq-grid.html"']) if(!index.includes(needle)) throw new Error("ROOT_ENTRY_INVALID: "+needle);
 for (const needle of ['id="jx-neural-pill"','class="cockpit"','id="v29-launcher"','id="skip-boot"']) if(!html.includes(needle)) throw new Error("OBSERVATORY_DOM_CONTRACT_MISSING: "+needle);
