@@ -27,12 +27,12 @@ writeFileSync(indexPath, rootEntry);
 const swPath = path.join(output, "sw.js");
 if (!existsSync(swPath)) throw new Error("PREVIEW_SERVICE_WORKER_MISSING");
 let sw = readFileSync(swPath, "utf8");
-sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v5")
-       .replaceAll("jarvis-x-p5-safe-preview-v2", "jarvis-x-p5-safe-preview-v5")
-       .replaceAll("jarvis-x-p5-safe-preview-v3", "jarvis-x-p5-safe-preview-v5")
-       .replaceAll("jarvis-x-p5-safe-preview-v4", "jarvis-x-p5-safe-preview-v5");
-if (!sw.includes("jarvis-x-p5-safe-preview-v5") || /jarvis-x-p5-safe-preview-v[1234]/.test(sw)) {
-  throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V5");
+sw = sw.replaceAll("jarvis-x-p5-safe-preview-v6", "jarvis-x-p5-safe-preview-v6")
+       .replaceAll("jarvis-x-p5-safe-preview-v6", "jarvis-x-p5-safe-preview-v6")
+       .replaceAll("jarvis-x-p5-safe-preview-v6", "jarvis-x-p5-safe-preview-v6")
+       .replaceAll("jarvis-x-p5-safe-preview-v6", "jarvis-x-p5-safe-preview-v6");
+if (!sw.includes("jarvis-x-p5-safe-preview-v6") || /jarvis-x-p5-safe-preview-v[1234]/.test(sw)) {
+  throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V6");
 }
 const shellMarker = "const SHELL = [";
 if (!sw.includes(shellMarker)) throw new Error("PREVIEW_SERVICE_WORKER_SHELL_MISSING");
@@ -54,7 +54,7 @@ writeFileSync(swPath, sw);
 const manifestPath = path.join(output, "preview-manifest.json");
 if (existsSync(manifestPath)) {
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v5";
+  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v6";
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
 }
 
@@ -120,7 +120,7 @@ writeFileSync(htmlPath, html);
 const finalManifestPath = path.join(output, "preview-manifest.json");
 if (existsSync(finalManifestPath)) {
   const manifest = JSON.parse(readFileSync(finalManifestPath, "utf8"));
-  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v5";
+  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v6";
   const paths = [...new Set([...manifest.files.map(file => file.path), "index.html", "hq-grid.html", "observatory-exocortex.css", "observatory-exocortex.js", "module-frame.css", "sw.js"])]
     .filter(name => existsSync(path.join(output, name)));
   manifest.files = paths.map(name => {
@@ -130,4 +130,4 @@ if (existsSync(finalManifestPath)) {
   manifest.file_count = manifest.files.length;
   writeFileSync(finalManifestPath, JSON.stringify(manifest, null, 2) + "\n");
 }
-console.log(JSON.stringify({entry:"observatory.html", removed:[".sanctuary","#astrolabe",".dock"], cache:"jarvis-x-p5-safe-preview-v5", grid:"hq-grid.html"}, null, 2));
+console.log(JSON.stringify({entry:"observatory.html", removed:[".sanctuary","#astrolabe",".dock"], cache:"jarvis-x-p5-safe-preview-v6", grid:"hq-grid.html"}, null, 2));
