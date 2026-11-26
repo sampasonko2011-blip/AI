@@ -1,0 +1,59 @@
+name: Deploy isolated P5 safe preview
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/deploy-preview.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-repo-p5-preview-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout pinned JARVIS-X P5 safe-preview source
+        uses: actions/checkout@v4
+        with:
+          repository: sampasonko2011-blip/JARVIS-X
+          ref: d83fdf59e3aae058542110d846558eaedf718958
+          path: source
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install source build dependencies
+        working-directory: source
+        run: npm install --no-audit --no-fund
+      - name: Build browser bundles
+        working-directory: source
+        run: npm run build
+      - name: Build and validate the exact safe-preview allowlist
+        working-directory: source
+        run: node scripts/build-p5-safe-preview.mjs
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: source/dist/hq-p5-safe-preview
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy isolated preview
+        id: deployment
+        uses: actions/deploy-pages@v4
