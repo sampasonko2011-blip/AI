@@ -20,3 +20,18 @@ body{height:100dvh;min-height:100dvh;overflow:hidden;font-family:ui-sans-serif,s
 @media(max-width:520px){.ex-cockpit{grid-template-columns:1fr!important}.ex-left,.ex-right{grid-column:1}.ex-left{grid-row:1}.ex-right{grid-row:2}.ex-workspace{grid-column:1;grid-row:3}.ex-dock-button{min-width:104px;font-size:9px}}
 @media(orientation:landscape) and (max-height:600px){.ex-cockpit{height:calc(100dvh - 100px)!important}.ex-panel{padding:10px}.ex-panel p{font-size:10px}.ex-drawer{width:min(620px,calc(100vw - 32px));max-height:calc(100dvh - 100px)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.ex-particles{display:none}}
+
+/* Functional module drawers: the iframe hosts the original, interactive HQ views. */
+.ex-mode-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ex-mode-group button,.ex-audio-toggle{min-height:40px;padding:8px 10px;border:1px solid var(--ex-line);border-radius:10px;background:#0b1b2b;color:#9cb6c6;font:9px ui-monospace,monospace;letter-spacing:.06em;cursor:pointer;touch-action:manipulation}
+.ex-mode-group button[aria-pressed=true]{border-color:var(--ex-cyan);color:#e7fbff;background:#10303a;box-shadow:0 0 16px #67f7ed22}
+.ex-audio-toggle[aria-pressed=true]{border-color:#f2c56b;color:#ffe2a4}
+.ex-drawer{width:min(1180px,calc(100vw - 24px));height:min(88dvh,920px);max-height:calc(100dvh - 24px);min-height:0;padding:16px;display:flex;flex-direction:column;gap:10px}
+.ex-drawer-copy{margin:0 0 2px;max-width:100%;font-size:12px}
+.ex-drawer-tabs{display:flex;gap:7px;flex-wrap:wrap}
+.ex-drawer-tabs[hidden]{display:none}
+.ex-drawer-tab{min-height:42px;padding:8px 12px;border:1px solid var(--ex-line);border-radius:10px;background:#0b1b2b;color:#b8d4df;font:9px ui-monospace,monospace;letter-spacing:.07em;touch-action:manipulation}
+.ex-drawer-tab[aria-pressed=true]{border-color:var(--ex-cyan);color:#fff;background:#10303a}
+.ex-module-frame{display:block;flex:1 1 auto;width:100%;min-height:0;border:1px solid rgba(103,247,237,.2);border-radius:14px;background:#030711}
+@media(max-width:850px){.ex-drawer{height:88dvh;width:calc(100vw - 16px);padding:12px}.ex-mode-group{order:4;width:100%}.ex-pill-state{order:3}.ex-audio-toggle{order:5}.ex-chat-open{order:6}.ex-audio-stop{order:7}}
+@media(max-width:520px){.ex-drawer{height:92dvh;max-height:calc(100dvh - 12px)}.ex-module-frame{border-radius:10px}.ex-drawer-tab{flex:1 1 auto}}

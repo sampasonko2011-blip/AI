@@ -8,7 +8,7 @@ const htmlPath = path.join(output, "observatory.html");
 const indexPath = path.join(output, "index.html");
 const gridPath = path.join(output, "hq-grid.html");
 
-for (const file of ["observatory-exocortex.css", "observatory-exocortex.js"]) {
+for (const file of ["observatory-exocortex.css", "observatory-exocortex.js", "module-frame.css"]) {
   if (!existsSync(path.join(overlay, file))) throw new Error("OVERLAY_ASSET_MISSING: " + file);
   copyFileSync(path.join(overlay, file), path.join(output, file));
 }
@@ -27,12 +27,13 @@ writeFileSync(indexPath, rootEntry);
 const swPath = path.join(output, "sw.js");
 if (!existsSync(swPath)) throw new Error("PREVIEW_SERVICE_WORKER_MISSING");
 let sw = readFileSync(swPath, "utf8");
-sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v5")
-       .replaceAll("jarvis-x-p5-safe-preview-v2", "jarvis-x-p5-safe-preview-v5")
-       .replaceAll("jarvis-x-p5-safe-preview-v3", "jarvis-x-p5-safe-preview-v5")
-       .replaceAll("jarvis-x-p5-safe-preview-v4", "jarvis-x-p5-safe-preview-v5");
-if (!sw.includes("jarvis-x-p5-safe-preview-v5") || /jarvis-x-p5-safe-preview-v[1234]/.test(sw)) {
-  throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V5");
+sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v6")
+       .replaceAll("jarvis-x-p5-safe-preview-v2", "jarvis-x-p5-safe-preview-v6")
+       .replaceAll("jarvis-x-p5-safe-preview-v3", "jarvis-x-p5-safe-preview-v6")
+       .replaceAll("jarvis-x-p5-safe-preview-v4", "jarvis-x-p5-safe-preview-v6")
+       .replaceAll("jarvis-x-p5-safe-preview-v5", "jarvis-x-p5-safe-preview-v6");
+if (!sw.includes("jarvis-x-p5-safe-preview-v6") || /jarvis-x-p5-safe-preview-v[1234]/.test(sw)) {
+  throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V6");
 }
 const shellMarker = "const SHELL = [";
 if (!sw.includes(shellMarker)) throw new Error("PREVIEW_SERVICE_WORKER_SHELL_MISSING");
@@ -42,7 +43,7 @@ for (const retired of ["observatory.js", "v54-observatory.js"]) {
   if (existsSync(target)) unlinkSync(target);
   sw = sw.replaceAll(JSON.stringify("./" + retired) + ",", "");
 }
-const assets = ["./hq-grid.html", "./observatory-exocortex.css", "./observatory-exocortex.js"];
+const assets = ["./hq-grid.html", "./observatory-exocortex.css", "./observatory-exocortex.js", "./module-frame.css"];
 for (const asset of assets) {
   if (!sw.includes(JSON.stringify(asset))) {
     sw = sw.replace(shellMarker, shellMarker + JSON.stringify(asset) + ", ");
@@ -54,8 +55,17 @@ writeFileSync(swPath, sw);
 const manifestPath = path.join(output, "preview-manifest.json");
 if (existsSync(manifestPath)) {
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v5";
+  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v6";
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+}
+
+// Permit only public model-artifact hosts for the explicitly user-initiated local WebLLM download.
+const localChatPath = path.join(output, "local-chat.html");
+if (existsSync(localChatPath)) {
+  let localChat = readFileSync(localChatPath, "utf8");
+  localChat = localChat.replace("connect-src 'self'; font-src", "connect-src 'self' https://huggingface.co https://*.huggingface.co https://cdn-lfs.huggingface.co https://cas-bridge.xethub.hf.co https://*.xethub.hf.co https://*.hf.co https://raw.githubusercontent.com; font-src");
+  if (!localChat.includes("https://huggingface.co") || localChat.includes("https://xfewajxkqntflfntisut.supabase.co")) throw new Error("LOCAL_CHAT_MODEL_CSP_NOT_SAFE");
+  writeFileSync(localChatPath, localChat);
 }
 
 let html = readFileSync(htmlPath, "utf8");
@@ -111,8 +121,8 @@ writeFileSync(htmlPath, html);
 const finalManifestPath = path.join(output, "preview-manifest.json");
 if (existsSync(finalManifestPath)) {
   const manifest = JSON.parse(readFileSync(finalManifestPath, "utf8"));
-  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v5";
-  const paths = [...new Set([...manifest.files.map(file => file.path), "index.html", "hq-grid.html", "observatory-exocortex.css", "observatory-exocortex.js", "sw.js"])]
+  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v6";
+  const paths = [...new Set([...manifest.files.map(file => file.path), "index.html", "hq-grid.html", "observatory-exocortex.css", "observatory-exocortex.js", "module-frame.css", "sw.js"])]
     .filter(name => existsSync(path.join(output, name)));
   manifest.files = paths.map(name => {
     const bytes = readFileSync(path.join(output, name));
@@ -121,4 +131,4 @@ if (existsSync(finalManifestPath)) {
   manifest.file_count = manifest.files.length;
   writeFileSync(finalManifestPath, JSON.stringify(manifest, null, 2) + "\n");
 }
-console.log(JSON.stringify({entry:"observatory.html", removed:[".sanctuary","#astrolabe",".dock"], cache:"jarvis-x-p5-safe-preview-v5", grid:"hq-grid.html"}, null, 2));
+console.log(JSON.stringify({entry:"observatory.html", removed:[".sanctuary","#astrolabe",".dock"], cache:"jarvis-x-p5-safe-preview-v6", grid:"hq-grid.html"}, null, 2));
