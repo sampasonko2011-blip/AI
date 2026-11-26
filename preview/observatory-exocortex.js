@@ -72,7 +72,7 @@ audioToggle.addEventListener('click',()=>{window.JXSpatial?.toggleAudio();render
 renderModes();
 $('.ex-chat-open').addEventListener('click',()=>openModule('chat'));
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>reg.update()).catch(()=>{});}
-const stop=$('.ex-audio-stop');stop.addEventListener('click',()=>{try{window.speechSynthesis?.cancel()}catch{}document.querySelectorAll('audio').forEach(a=>{a.pause();a.currentTime=0});info('Audio stop','Browser speech and audio elements were asked to stop.')});
+const stop=$('.ex-audio-stop');stop.addEventListener('click',()=>{try{window.speechSynthesis?.cancel();if(window.JXSpatial?.enabled)window.JXSpatial.toggleAudio();const child=drawer._frame.contentWindow;child?.speechSynthesis?.cancel();drawer._frame.contentDocument?.querySelector('#jx-audio-stop')?.click();const mic=drawer._frame.contentDocument?.querySelector('#jx-voice-mic[aria-pressed="true"]');mic?.click();drawer._frame.contentDocument?.querySelectorAll('audio').forEach(a=>{a.pause();a.currentTime=0})}catch{}document.querySelectorAll('audio').forEach(a=>{a.pause();a.currentTime=0});renderModes();info('Audio stop','The top-level tone, browser speech and active HQ voice controls were asked to stop.')});
 const boot=$('#jx-cinema-boot');if(boot){const skip=()=>boot.classList.add('done','boot-dismissed');$('#skip-boot')?.addEventListener('click',skip);window.setTimeout(skip,1500)}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();$('#ex-info')?.classList.remove('open')}});
 /* Lightweight particle field: visual-only canvas, pointer events remain on the page. */
