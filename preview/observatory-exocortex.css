@@ -20,3 +20,6 @@ body{height:100dvh;min-height:100dvh;overflow:hidden;font-family:ui-sans-serif,s
 @media(max-width:520px){.ex-cockpit{grid-template-columns:1fr!important}.ex-left,.ex-right{grid-column:1}.ex-left{grid-row:1}.ex-right{grid-row:2}.ex-workspace{grid-column:1;grid-row:3}.ex-dock-button{min-width:104px;font-size:9px}}
 @media(orientation:landscape) and (max-height:600px){.ex-cockpit{height:calc(100dvh - 100px)!important}.ex-panel{padding:10px}.ex-panel p{font-size:10px}.ex-drawer{width:min(620px,calc(100vw - 32px));max-height:calc(100dvh - 100px)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.ex-particles{display:none}}
+
+/* Fail closed if a legacy script ever attempts to reinsert the retired telemetry shell. */
+.jx-v54-shell,.sanctuary,#astrolabe,.astrolabe{display:none!important;pointer-events:none!important}

@@ -26,10 +26,11 @@ writeFileSync(indexPath, rootEntry);
 const swPath = path.join(output, "sw.js");
 if (!existsSync(swPath)) throw new Error("PREVIEW_SERVICE_WORKER_MISSING");
 let sw = readFileSync(swPath, "utf8");
-sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v3")
-       .replaceAll("jarvis-x-p5-safe-preview-v2", "jarvis-x-p5-safe-preview-v3");
-if (!sw.includes("jarvis-x-p5-safe-preview-v3") || /jarvis-x-p5-safe-preview-v[12]/.test(sw)) {
-  throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V3");
+sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v4")
+       .replaceAll("jarvis-x-p5-safe-preview-v2", "jarvis-x-p5-safe-preview-v4")
+       .replaceAll("jarvis-x-p5-safe-preview-v3", "jarvis-x-p5-safe-preview-v4");
+if (!sw.includes("jarvis-x-p5-safe-preview-v4") || /jarvis-x-p5-safe-preview-v[123]/.test(sw)) {
+  throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V4");
 }
 const shellMarker = "const SHELL = [";
 if (!sw.includes(shellMarker)) throw new Error("PREVIEW_SERVICE_WORKER_SHELL_MISSING");
@@ -45,11 +46,20 @@ writeFileSync(swPath, sw);
 const manifestPath = path.join(output, "preview-manifest.json");
 if (existsSync(manifestPath)) {
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v3";
+  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v4";
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
 }
 
 let html = readFileSync(htmlPath, "utf8");
+// These legacy scripts recreate the removed visual core or assume its DOM exists.
+for (const scriptTag of [
+  '<script src="./observatory.js" defer></script>',
+  '<script src="./v54-observatory.js" defer></script>'
+]) html = html.replaceAll(scriptTag, "");
+if (html.includes('src="./observatory.js"') || html.includes('src="./v54-observatory.js"')) {
+  throw new Error("LEGACY_OBSERVATORY_SCRIPT_STILL_REFERENCED");
+}
+
 // Physically remove the complete central sanctuary / astrolabe section.
 const sanctuaryStart = html.indexOf('<section class="sanctuary">');
 if (sanctuaryStart >= 0) {
@@ -75,4 +85,4 @@ if (!html.includes("observatory-exocortex.css")) html = html.replace("</head>", 
 if (!html.includes("observatory-exocortex.js")) html = html.replace("</body>", '<script src="./observatory-exocortex.js" defer></script>\n</body>');
 if (!html.includes("observatory-exocortex.css") || !html.includes("observatory-exocortex.js")) throw new Error("OVERLAY_INJECTION_FAILED");
 writeFileSync(htmlPath, html);
-console.log(JSON.stringify({entry:"observatory.html", removed:[".sanctuary","#astrolabe",".dock"], cache:"jarvis-x-p5-safe-preview-v3", grid:"hq-grid.html"}, null, 2));
+console.log(JSON.stringify({entry:"observatory.html", removed:[".sanctuary","#astrolabe",".dock"], cache:"jarvis-x-p5-safe-preview-v4", grid:"hq-grid.html"}, null, 2));
