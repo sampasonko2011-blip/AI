@@ -27,10 +27,11 @@ writeFileSync(indexPath, rootEntry);
 const swPath = path.join(output, "sw.js");
 if (!existsSync(swPath)) throw new Error("PREVIEW_SERVICE_WORKER_MISSING");
 let sw = readFileSync(swPath, "utf8");
-sw = sw.replaceAll("jarvis-x-p5-safe-preview-v6", "jarvis-x-p5-safe-preview-v6")
-       .replaceAll("jarvis-x-p5-safe-preview-v6", "jarvis-x-p5-safe-preview-v6")
-       .replaceAll("jarvis-x-p5-safe-preview-v6", "jarvis-x-p5-safe-preview-v6")
-       .replaceAll("jarvis-x-p5-safe-preview-v6", "jarvis-x-p5-safe-preview-v6");
+sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v6")
+       .replaceAll("jarvis-x-p5-safe-preview-v2", "jarvis-x-p5-safe-preview-v6")
+       .replaceAll("jarvis-x-p5-safe-preview-v3", "jarvis-x-p5-safe-preview-v6")
+       .replaceAll("jarvis-x-p5-safe-preview-v4", "jarvis-x-p5-safe-preview-v6")
+       .replaceAll("jarvis-x-p5-safe-preview-v5", "jarvis-x-p5-safe-preview-v6");
 if (!sw.includes("jarvis-x-p5-safe-preview-v6") || /jarvis-x-p5-safe-preview-v[1234]/.test(sw)) {
   throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V6");
 }
