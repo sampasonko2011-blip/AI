@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
 
@@ -70,12 +70,12 @@ if (html.includes('src="./observatory.js"') || html.includes('src="./v54-observa
 
 // Remove obsolete CSS rules for the retired sphere and dynamically injected v54 orb.
 const cssFiles = ["observatory.css","interstellar-v30.css","interstellar-v31.css","interstellar-v32.css","spatial-liquid-hud.css","v54-harmony.css","observatory-exocortex.css"];
-const legacySelector = /(?:\\.sanctuary|#astrolabe|\\.astrolabe|\\.crystal|\\.jx-v54-shell|\\.jx-v54-orb|\\.jx-v54-panel|\\.jx-v54-title|\\.jx-v54-value)/;
-const legacyRule = /[^{}]*(?:\\.sanctuary|#astrolabe|\\.astrolabe|\\.crystal|\\.jx-v54-shell|\\.jx-v54-orb|\\.jx-v54-panel|\\.jx-v54-title|\\.jx-v54-value)[^{}]*\\{[^{}]*\\}/g;
+const legacySelector = /(?:[.]sanctuary|#astrolabe|[.]astrolabe|[.]crystal|[.]jx-v54-shell|[.]jx-v54-orb|[.]jx-v54-panel|[.]jx-v54-title|[.]jx-v54-value)/;
+const legacyRule = /[^{}]*(?:[.]sanctuary|#astrolabe|[.]astrolabe|[.]crystal|[.]jx-v54-shell|[.]jx-v54-orb|[.]jx-v54-panel|[.]jx-v54-title|[.]jx-v54-value)[^{}]*\{[^{}]*\}/g;
 for (const name of cssFiles) {
   const target = path.join(output, name);
   if (!existsSync(target)) continue;
-  let css = readFileSync(target, "utf8").replace(/\\/\\*[\\s\\S]*?\\*\\//g, "");
+  let css = readFileSync(target, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
   let previous;
   do { previous = css; css = css.replace(legacyRule, ""); } while (css !== previous);
   if (legacySelector.test(css)) throw new Error("LEGACY_VISUAL_CORE_CSS_REMAINS: " + name);
@@ -107,4 +107,18 @@ if (!html.includes("observatory-exocortex.css")) html = html.replace("</head>", 
 if (!html.includes("observatory-exocortex.js")) html = html.replace("</body>", '<script src="./observatory-exocortex.js" defer></script>\n</body>');
 if (!html.includes("observatory-exocortex.css") || !html.includes("observatory-exocortex.js")) throw new Error("OVERLAY_INJECTION_FAILED");
 writeFileSync(htmlPath, html);
+// Recompute the preview manifest after all transformations and retired-file removals.
+const finalManifestPath = path.join(output, "preview-manifest.json");
+if (existsSync(finalManifestPath)) {
+  const manifest = JSON.parse(readFileSync(finalManifestPath, "utf8"));
+  manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v5";
+  const paths = [...new Set([...manifest.files.map(file => file.path), "index.html", "hq-grid.html", "observatory-exocortex.css", "observatory-exocortex.js", "sw.js"])]
+    .filter(name => existsSync(path.join(output, name)));
+  manifest.files = paths.map(name => {
+    const bytes = readFileSync(path.join(output, name));
+    return { path: name, bytes: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") };
+  });
+  manifest.file_count = manifest.files.length;
+  writeFileSync(finalManifestPath, JSON.stringify(manifest, null, 2) + "\n");
+}
 console.log(JSON.stringify({entry:"observatory.html", removed:[".sanctuary","#astrolabe",".dock"], cache:"jarvis-x-p5-safe-preview-v5", grid:"hq-grid.html"}, null, 2));
