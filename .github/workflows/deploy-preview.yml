@@ -1,3 +1,4 @@
+# Re-trigger after repository owner enabled GitHub Pages with Actions source.
 name: Deploy isolated P5 safe preview
 
 on:
