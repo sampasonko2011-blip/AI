@@ -26,10 +26,11 @@ writeFileSync(indexPath, rootEntry);
 const swPath = path.join(output, "sw.js");
 if (!existsSync(swPath)) throw new Error("PREVIEW_SERVICE_WORKER_MISSING");
 let sw = readFileSync(swPath, "utf8");
-sw = sw.replaceAll("jarvis-x-p5-safe-preview-v4", "jarvis-x-p5-safe-preview-v4")
-       .replaceAll("jarvis-x-p5-safe-preview-v4", "jarvis-x-p5-safe-preview-v4");
-if (!sw.includes("jarvis-x-p5-safe-preview-v4") || /jarvis-x-p5-safe-preview-v[12]/.test(sw)) {
-  throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V3");
+sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v4")
+       .replaceAll("jarvis-x-p5-safe-preview-v2", "jarvis-x-p5-safe-preview-v4")
+       .replaceAll("jarvis-x-p5-safe-preview-v3", "jarvis-x-p5-safe-preview-v4");
+if (!sw.includes("jarvis-x-p5-safe-preview-v4") || /jarvis-x-p5-safe-preview-v[123]/.test(sw)) {
+  throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V4");
 }
 const shellMarker = "const SHELL = [";
 if (!sw.includes(shellMarker)) throw new Error("PREVIEW_SERVICE_WORKER_SHELL_MISSING");
@@ -50,12 +51,12 @@ if (existsSync(manifestPath)) {
 }
 
 let html = readFileSync(htmlPath, "utf8");
-// Remove scripts that recreate the retired sphere or assume its DOM still exists.
-for (const script of ["observatory.js", "v54-observatory.js"]) {
-  const tag = new RegExp('<script\\b(?=[^>]*src=["\\']\\./' + script.replace(".", "\\\\.") + '["\\'])[^>]*>\\\\s*<\\\\/script>', "gi");
-  html = html.replace(tag, "");
-}
-if (/src=["']\\.\\/(?:observatory|v54-observatory)\\.js["']/.test(html)) {
+// These legacy scripts recreate the removed visual core or assume its DOM exists.
+for (const scriptTag of [
+  '<script src="./observatory.js" defer></script>',
+  '<script src="./v54-observatory.js" defer></script>'
+]) html = html.replaceAll(scriptTag, "");
+if (html.includes('src="./observatory.js"') || html.includes('src="./v54-observatory.js"')) {
   throw new Error("LEGACY_OBSERVATORY_SCRIPT_STILL_REFERENCED");
 }
 
