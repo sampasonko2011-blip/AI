@@ -49,3 +49,34 @@
   #v29-panels { display:none!important; }
   .dock,.ex-retired-dock { display:none!important; visibility:hidden!important; pointer-events:none!important; }
 }
+
+
+/* CLEAN COMMAND WORKSPACE: remove the oversized decorative Neural Constellation */
+.ex-cockpit .sanctuary,
+.ex-cockpit .sanctuary .core-label,
+.ex-cockpit .sanctuary .astrolabe,
+.ex-cockpit .sanctuary .hero-title,
+.ex-cockpit .sanctuary .hero-copy,
+.ex-cockpit .sanctuary .modes,
+.ex-cockpit .sanctuary .status-line,
+.ex-cockpit .sanctuary .alarm-row,
+.ex-cockpit .sanctuary .audio-row {
+  display:none!important;
+}
+@media (orientation:landscape) and (min-width:851px) {
+  .ex-cockpit {
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+    align-items:stretch!important;
+  }
+  .ex-cockpit .ex-left {grid-column:1!important;grid-row:1!important}
+  .ex-cockpit .ex-right {grid-column:2!important;grid-row:1!important}
+}
+@media (max-width:850px) {
+  .ex-cockpit .sanctuary {display:none!important}
+  .ex-cockpit .ex-left,.ex-cockpit .ex-right {
+    grid-column:auto!important;
+    grid-row:auto!important;
+    min-width:0;
+  }
+}
