@@ -12,3 +12,8 @@ if(!css.includes("pointer-events:none")||!css.includes("@media(prefers-reduced-m
 if(!grid.includes("APEX CAREER OS") && !grid.includes("JARVIS")) throw new Error("HQ_GRID_SOURCE_NOT_PRESERVED");
 if(!sw.includes('"./hq-grid.html"')) throw new Error("HQ_GRID_NOT_IN_OFFLINE_SHELL");
 console.log("OBSERVATORY_OVERLAY_SMOKE: PASS (static contract only; no browser/device E2E)");
+
+const dockButtons = (js.match(/\['(?:VOICE|PERCEPTION|AI BUILDER|MEMORY)'/g) || []).length;
+if (dockButtons !== 4 || !js.includes("HQ GRID") || js.includes("['CHAT','chat']")) throw new Error("CONTROL_DOCK_MUST_HAVE_FIVE_CONTROLS");
+if (!css.includes("grid-template-columns:280px minmax(0,1fr) 280px") || !css.includes("height:100dvh") || !css.includes("#v29-panels")) throw new Error("LANDSCAPE_LAYOUT_CONTRACT_MISSING");
+console.log("LANDSCAPE_LAYOUT_AND_FIVE_CONTROL_DOCK: PASS");
