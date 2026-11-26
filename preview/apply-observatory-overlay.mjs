@@ -32,6 +32,18 @@ if (existsSync(swPath)) {
   }
 }
 let html = readFileSync(htmlPath, "utf8");
+// Physically remove the legacy central sanctuary/astrolabe from the published DOM.
+// This is intentionally not a CSS hide: the opaque crystal and its enclosing hero
+// section must not ship in the Observatory document at all.
+const sanctuaryStart = html.indexOf('<section class="sanctuary">');
+if (sanctuaryStart >= 0) {
+  const sanctuaryEnd = html.indexOf("</section>", sanctuaryStart);
+  if (sanctuaryEnd < 0) throw new Error("SANCTUARY_DOM_CLOSE_NOT_FOUND");
+  html = html.slice(0, sanctuaryStart) + html.slice(sanctuaryEnd + "</section>".length);
+}
+if (html.includes('id="astrolabe"') || html.includes('class="sanctuary"')) {
+  throw new Error("SANCTUARY_DOM_REMOVAL_FAILED");
+}
 if (!html.includes("observatory-exocortex.css")) html = html.replace("</head>", '<link rel="stylesheet" href="./observatory-exocortex.css">\n</head>');
 if (!html.includes("observatory-exocortex.js")) html = html.replace("</body>", '<script src="./observatory-exocortex.js" defer></script>\n</body>');
 if (!html.includes("observatory-exocortex.css") || !html.includes("observatory-exocortex.js")) throw new Error("OVERLAY_INJECTION_FAILED");
