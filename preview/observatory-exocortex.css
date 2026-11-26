@@ -51,18 +51,54 @@
 }
 
 
-/* CLEAN COMMAND WORKSPACE: remove the oversized decorative Neural Constellation */
-.ex-cockpit .sanctuary,
+/* AMBIENT OBSERVATORY: keep the decorative atmosphere, remove only the blocking blue core */
+.ex-cockpit { position:relative!important; }
+.ex-cockpit .sanctuary {
+  display:flex!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  width:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+  opacity:.34;
+}
 .ex-cockpit .sanctuary .core-label,
-.ex-cockpit .sanctuary .astrolabe,
 .ex-cockpit .sanctuary .hero-title,
 .ex-cockpit .sanctuary .hero-copy,
 .ex-cockpit .sanctuary .modes,
 .ex-cockpit .sanctuary .status-line,
 .ex-cockpit .sanctuary .alarm-row,
-.ex-cockpit .sanctuary .audio-row {
-  display:none!important;
+.ex-cockpit .sanctuary .audio-row { display:none!important; }
+.ex-cockpit .sanctuary .astrolabe {
+  display:block!important;
+  position:relative!important;
+  width:clamp(150px,22vw,260px)!important;
+  height:clamp(150px,22vw,260px)!important;
+  max-height:none!important;
+  margin:0!important;
+  flex:none!important;
+  pointer-events:none!important;
+  filter:saturate(.8);
 }
+/* The large luminous blue sphere is the obstruction: keep its orbital rings and halo. */
+.ex-cockpit .sanctuary .astrolabe .crystal { display:none!important; }
+.ex-cockpit .sanctuary .astrolabe .orbit,
+.ex-cockpit .sanctuary .astrolabe .breath-halo,
+.ex-cockpit .sanctuary .astrolabe .shockwave { display:block!important; }
+.ex-cockpit .ex-side,
+.ex-cockpit .ex-left,
+.ex-cockpit .ex-right,
+.ex-dock,
+.ex-drawer { position:relative; z-index:5!important; }
+.ex-particles { z-index:1!important; pointer-events:none!important; }
 @media (orientation:landscape) and (min-width:851px) {
   .ex-cockpit {
     grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
@@ -73,10 +109,7 @@
   .ex-cockpit .ex-right {grid-column:2!important;grid-row:1!important}
 }
 @media (max-width:850px) {
-  .ex-cockpit .sanctuary {display:none!important}
-  .ex-cockpit .ex-left,.ex-cockpit .ex-right {
-    grid-column:auto!important;
-    grid-row:auto!important;
-    min-width:0;
-  }
+  .ex-cockpit .sanctuary {display:flex!important}
+  .ex-cockpit .sanctuary .astrolabe {width:150px!important;height:150px!important}
+  .ex-cockpit .ex-left,.ex-cockpit .ex-right {min-width:0;}
 }
