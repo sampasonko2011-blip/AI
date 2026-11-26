@@ -27,16 +27,23 @@ if (existsSync(swPath)) {
   let sw = readFileSync(swPath, "utf8");
   // Isolated preview owns a dedicated cache namespace; never reuse v1 after DOM changes.
   if (sw.includes("jarvis-x-p5-safe-preview-v1")) {
-    sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v2");
+    sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v3");
     writeFileSync(swPath, sw);
   }
-  if (!sw.includes("jarvis-x-p5-safe-preview-v2") || sw.includes("jarvis-x-p5-safe-preview-v1")) {
+  if (!sw.includes("jarvis-x-p5-safe-preview-v3") || sw.includes("jarvis-x-p5-safe-preview-v1")) {
     throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V2");
   }
-  if (!sw.includes('"./hq-grid.html"')) {
-    sw = sw.replace("const SHELL = [", 'const SHELL = ["./hq-grid.html",');
-    if (!sw.includes('"./hq-grid.html"')) throw new Error("HQ_GRID_OFFLINE_SHELL_INJECTION_FAILED");
+  for (const asset of ["./hq-grid.html","./observatory-exocortex.css","./observatory-exocortex.js"]) {
+    if (!sw.includes(JSON.stringify(asset))) sw = sw.replace("const SHELL = [", 'const SHELL = [' + JSON.stringify(asset) + ',');
+  }
+    if (!sw.includes('"./hq-grid.html"') || !sw.includes('"./observatory-exocortex.css"') || !sw.includes('"./observatory-exocortex.js"')) throw new Error("PREVIEW_ASSETS_OFFLINE_SHELL_INJECTION_FAILED");
     writeFileSync(swPath, sw);
+  }
+  const manifestPath = path.join(output, "preview-manifest.json");
+  if (existsSync(manifestPath)) {
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.policy.service_worker_cache_namespace = "jarvis-x-p5-safe-preview-v3";
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\\n");
   }
 }
 let html = readFileSync(htmlPath, "utf8");
@@ -51,6 +58,16 @@ if (sanctuaryStart >= 0) {
 }
 if (html.includes('id="astrolabe"') || html.includes('class="sanctuary"')) {
   throw new Error("SANCTUARY_DOM_REMOVAL_FAILED");
+}
+// Remove the obsolete multi-button toolbar from the published DOM, not merely via CSS.
+const legacyDockStart = html.indexOf('<nav class="dock">');
+if (legacyDockStart >= 0) {
+  const legacyDockEnd = html.indexOf("</nav>", legacyDockStart);
+  if (legacyDockEnd < 0) throw new Error("LEGACY_DOCK_CLOSE_NOT_FOUND");
+  html = html.slice(0, legacyDockStart) + html.slice(legacyDockEnd + "</nav>".length);
+}
+if (html.includes('<nav class="dock">') || html.includes("＋ ADD MODULE") || html.includes("CHAT IA</a>")) {
+  throw new Error("LEGACY_DOCK_DOM_REMOVAL_FAILED");
 }
 if (!html.includes("observatory-exocortex.css")) html = html.replace("</head>", '<link rel="stylesheet" href="./observatory-exocortex.css">\n</head>');
 if (!html.includes("observatory-exocortex.js")) html = html.replace("</body>", '<script src="./observatory-exocortex.js" defer></script>\n</body>');
