@@ -25,6 +25,14 @@ writeFileSync(indexPath, rootEntry);
 const swPath = path.join(output, "sw.js");
 if (existsSync(swPath)) {
   let sw = readFileSync(swPath, "utf8");
+  // Isolated preview owns a dedicated cache namespace; never reuse v1 after DOM changes.
+  if (sw.includes("jarvis-x-p5-safe-preview-v1")) {
+    sw = sw.replaceAll("jarvis-x-p5-safe-preview-v1", "jarvis-x-p5-safe-preview-v2");
+    writeFileSync(swPath, sw);
+  }
+  if (!sw.includes("jarvis-x-p5-safe-preview-v2") || sw.includes("jarvis-x-p5-safe-preview-v1")) {
+    throw new Error("PREVIEW_SERVICE_WORKER_CACHE_VERSION_NOT_V2");
+  }
   if (!sw.includes('"./hq-grid.html"')) {
     sw = sw.replace("const SHELL = [", 'const SHELL = ["./hq-grid.html",');
     if (!sw.includes('"./hq-grid.html"')) throw new Error("HQ_GRID_OFFLINE_SHELL_INJECTION_FAILED");
