@@ -113,3 +113,40 @@
   .ex-cockpit .sanctuary .astrolabe {width:150px!important;height:150px!important}
   .ex-cockpit .ex-left,.ex-cockpit .ex-right {min-width:0;}
 }
+
+
+/* HQ WORKSPACE FINAL: remove only the opaque crystal; keep ambient orbital decoration */
+#astrolabe { width:clamp(180px,24vw,280px)!important; aspect-ratio:1; cursor:default!important; pointer-events:none!important; opacity:.28; }
+#astrolabe .crystal,
+#astrolabe::before,
+#astrolabe::after { display:none!important; content:none!important; }
+#astrolabe .orbit { opacity:.8; }
+#astrolabe .breath-halo { opacity:.22; }
+#astrolabe .shockwave { display:none!important; }
+.ex-cockpit .sanctuary { pointer-events:none!important; }
+.ex-cockpit .sanctuary > * { pointer-events:none!important; }
+.ex-cockpit .sanctuary .core-label,
+.ex-cockpit .sanctuary .hero-title,
+.ex-cockpit .sanctuary .hero-copy,
+.ex-cockpit .sanctuary .modes,
+.ex-cockpit .sanctuary .status-line,
+.ex-cockpit .sanctuary .alarm-row,
+.ex-cockpit .sanctuary .audio-row { display:none!important; }
+.ex-drawer {
+  left:50%!important; right:auto!important; top:50%!important;
+  bottom:auto!important; width:min(760px,calc(100vw - 32px))!important;
+  max-height:min(76dvh,680px)!important; min-height:min(42dvh,360px);
+  transform:translate(-50%,calc(-50% + 14px))!important;
+  z-index:140!important;
+}
+.ex-drawer.open { transform:translate(-50%,-50%)!important; }
+@media(max-width:850px) {
+  .ex-drawer {
+    left:50%!important; right:auto!important; top:50%!important; bottom:auto!important;
+    width:calc(100vw - 24px)!important; max-height:calc(100dvh - 150px)!important;
+    min-height:min(42dvh,320px);
+    transform:translate(-50%,calc(-50% + 12px))!important;
+  }
+  .ex-drawer.open {transform:translate(-50%,-50%)!important}
+}
+@media(prefers-reduced-motion:reduce){#astrolabe .orbit{animation:none!important}}
