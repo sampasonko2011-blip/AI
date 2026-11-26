@@ -23,7 +23,7 @@ for (const placeholder of ["Le tiroir Chat est prêt visuellement","Espace rése
 if(!css.includes("pointer-events:none")||!css.includes("@media(prefers-reduced-motion:reduce)")||!css.includes("min-height:48px")) throw new Error("OVERLAY_CSS_TOUCH_OR_MOTION_CONTRACT_MISSING");
 if(!grid.includes("APEX CAREER OS") && !grid.includes("JARVIS")) throw new Error("HQ_GRID_SOURCE_NOT_PRESERVED");
 for (const retired of ['"./observatory.js"','"./v54-observatory.js"']) if(sw.includes(retired)) throw new Error("RETIRED_SCRIPT_IN_OFFLINE_SHELL: "+retired);
-for (const asset of ['"./hq-grid.html"','"./observatory-exocortex.css"','"./observatory-exocortex.js"']) if(!sw.includes(asset)) throw new Error("PREVIEW_ASSET_NOT_IN_OFFLINE_SHELL: "+asset);
+for (const asset of ['"./hq-grid.html"','"./observatory-exocortex.css"','"./observatory-exocortex.js"','"./module-frame.css"']) if(!sw.includes(asset)) throw new Error("PREVIEW_ASSET_NOT_IN_OFFLINE_SHELL: "+asset);
 if(!sw.includes('jarvis-x-p5-safe-preview-v6') || /jarvis-x-p5-safe-preview-v[12345]/.test(sw)) throw new Error("SERVICE_WORKER_CACHE_NAMESPACE_NOT_V6");
 if (html.includes('<nav class="dock">') || html.includes("＋ ADD MODULE") || html.includes("CHAT IA</a>")) throw new Error("LEGACY_TOOLBAR_STILL_PUBLISHED");
 console.log("OBSERVATORY_OVERLAY_SMOKE: PASS (static contract only; no browser/device E2E)");
