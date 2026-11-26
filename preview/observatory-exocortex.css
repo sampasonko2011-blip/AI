@@ -150,3 +150,6 @@
   .ex-drawer.open {transform:translate(-50%,-50%)!important}
 }
 @media(prefers-reduced-motion:reduce){#astrolabe .orbit{animation:none!important}}
+
+/* Published DOM no longer contains .sanctuary / #astrolabe. Keep defensive fallback. */
+.sanctuary,#astrolabe,.astrolabe,.core-label,.hero-title,.hero-copy,.modes,.status-line,.alarm-row,.audio-row {display:none!important}
